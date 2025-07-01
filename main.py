@@ -1,8 +1,20 @@
+
 import streamlit as st
 from html2image import Html2Image
 import tempfile
 import base64
 import os
+
+def find_chrome():
+    paths = [
+        "/usr/bin/chromium",
+        "/usr/bin/chromium-browser",
+        "/usr/bin/google-chrome"
+    ]
+    for p in paths:
+        if os.path.exists(p):
+            return p
+    return None
 
 st.set_page_config(page_title="HTML to PNG Converter", layout="centered")
 st.title("HTML to PNG Converter")
@@ -27,16 +39,20 @@ with tab1:
         if not html_input.strip():
             st.warning("Please provide HTML input.")
         else:
-            try:
-                with tempfile.TemporaryDirectory() as tmpdir:
-                    hti = Html2Image(output_path=tmpdir)
-                    hti.screenshot(html_str=html_input, save_as='output.png')
-                    image_path = os.path.join(tmpdir, 'output.png')
-                    with open(image_path, "rb") as image_file:
-                        png_data = image_file.read()
-                st.success("Image generated successfully!")
-            except Exception as e:
-                st.error(f"Failed to render image: {e}")
+            chrome_path = find_chrome()
+            if not chrome_path:
+                st.error("Could not find a Chrome/Chromium executable on this system.")
+            else:
+                try:
+                    with tempfile.TemporaryDirectory() as tmpdir:
+                        hti = Html2Image(output_path=tmpdir, browser_executable=chrome_path)
+                        hti.screenshot(html_str=html_input, save_as='output.png')
+                        image_path = os.path.join(tmpdir, 'output.png')
+                        with open(image_path, "rb") as image_file:
+                            png_data = image_file.read()
+                    st.success("Image generated successfully!")
+                except Exception as e:
+                    st.error(f"Failed to render image: {e}")
 
     if png_data:
         st.image(png_data, caption="Rendered PNG", use_column_width=True)
