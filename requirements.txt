@@ -1,4 +1,5 @@
-streamlit
+fastapi
+uvicorn
 selenium
 webdriver_manager
-Pillow
+python-multipart
