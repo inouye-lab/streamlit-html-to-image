@@ -1,10 +1,14 @@
+
 import streamlit as st
-import tempfile, os
+import tempfile
+import os
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.core.os_manager import ChromeType
+from PIL import Image
+import io
 
 st.set_page_config(page_title="HTML to PNG (Selenium)", layout="centered")
 st.title("HTML → PNG Converter")
@@ -30,7 +34,7 @@ def get_driver():
         options=options,
     )
 
-def render_html_and_screenshot(html_string: str) -> str:
+def render_html_and_screenshot(html_string: str) -> bytes:
     with tempfile.TemporaryDirectory() as tmpdir:
         html_path = os.path.join(tmpdir, "temp.html")
         with open(html_path, "w", encoding="utf-8") as f:
@@ -39,16 +43,19 @@ def render_html_and_screenshot(html_string: str) -> str:
         driver.get(f"file://{html_path}")
         screenshot_path = os.path.join(tmpdir, "screenshot.png")
         driver.save_screenshot(screenshot_path)
-        return screenshot_path
+        # Read as bytes *before* the directory is deleted
+        with open(screenshot_path, "rb") as img_file:
+            img_bytes = img_file.read()
+        return img_bytes
 
 if st.button("Render & Screenshot HTML"):
-    screenshot_path = render_html_and_screenshot(user_html)
+    img_bytes = render_html_and_screenshot(user_html)
     st.success("🎉 Screenshot captured!")
-    st.image(screenshot_path, caption="Rendered HTML Screenshot", use_column_width=True)
-    with open(screenshot_path, "rb") as file:
-        st.download_button(
-            label="Download PNG",
-            data=file,
-            file_name="rendered_screenshot.png",
-            mime="image/png"
-        )
+    st.image(img_bytes, caption="Rendered HTML Screenshot", use_column_width=True)
+    st.download_button(
+        label="Download PNG",
+        data=img_bytes,
+        file_name="rendered_screenshot.png",
+        mime="image/png"
+    )
+
