@@ -1,6 +1,6 @@
-# Streamlit HTML to PNG App
+# Streamlit HTML to PNG App (Selenium)
 
-A simple Streamlit app that takes HTML code and renders it as a PNG image using Python's [html2image](https://pypi.org/project/html2image/) library.
+A simple Streamlit app that takes HTML code and renders it as a PNG image using Python, Selenium, and headless Chrome.
 
 ## Features
 - Enter or paste HTML code and instantly see the rendered PNG image.
@@ -34,5 +34,5 @@ project-root/
 ---
 
 ## Notes
-- `html2image` uses a headless browser to generate the PNG. Streamlit Cloud has Chromium pre-installed, so extra setup is not needed.
-- If you want to style the image (size, width, background), see the `Html2Image` documentation for options.
+- Streamlit Cloud has Chromium pre-installed, so extra setup is not needed.
+- If you want to style the image (size, width, background), add or adjust the Chrome `--window-size` option.

@@ -1,3 +1,4 @@
 streamlit
-html2image
+selenium
+webdriver-manager
 requests
