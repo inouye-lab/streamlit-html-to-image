@@ -68,13 +68,19 @@ with tab1:
             try:
                 with tempfile.TemporaryDirectory() as tmpdir:
                     driver = get_driver()
+                    st.success('Loaded driver')
                     tmp_html = os.path.join(tmpdir, "page.html")
                     with open(tmp_html, "w") as f:
                         f.write(html_input)
+                    st.success('Wrote temporary file')
                     driver.get(f"file://{tmp_html}")
+                    st.success('Retrieved temporary file')
                     driver.implicitly_wait(2)
+                    st.success('Finished waiting')
                     png_data = driver.get_screenshot_as_png()
+                    st.success('Got screenshot')
                     driver.quit()
+                    st.success('Successfully exited')
                 st.success("Image generated successfully!")
             except Exception as e:
                 st.error(f"Failed to render image: {e}")
