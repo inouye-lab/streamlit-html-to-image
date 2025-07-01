@@ -1,3 +1,4 @@
+
 import streamlit as st
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -7,28 +8,48 @@ from webdriver_manager.core.os_manager import ChromeType
 import tempfile
 import base64
 import os
+import shutil
 
 st.set_page_config(page_title="HTML to PNG Converter (Selenium)", layout="centered")
 st.title("HTML to PNG Converter (Selenium)")
 
+def get_chromium_bin():
+    candidates = [
+        "/usr/bin/chromium",
+        "/usr/bin/chromium-browser",
+        "/usr/bin/google-chrome"
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            return c
+    return None
+
+@st.cache_resource(show_spinner=False)
 def get_driver():
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=800,600")
     options.add_argument("--no-sandbox")
-    # Can add more options if needed
-    driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()),
-        options=options
-    )
+    options.add_argument("--disable-dev-shm-usage")
+    chromium_bin = get_chromium_bin()
+    if chromium_bin:
+        options.binary_location = chromium_bin
+    chromedriver_path = shutil.which("chromedriver")
+    if chromedriver_path:
+        service = Service(executable_path=chromedriver_path)
+    else:
+        service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
+    driver = webdriver.Chrome(service=service, options=options)
     return driver
 
 tab1, tab2 = st.tabs(["Input HTML", "About"])
 with tab2:
     st.markdown("""
-    This app takes HTML input (via GET or POST data) and renders it as a PNG image using Selenium + headless Chrome.
-    - Paste your HTML code below, or call this endpoint with your HTML as GET or POST data.
+    This app takes HTML input and renders it as a PNG image using Selenium and headless Chrome.
+    - Paste your HTML code below, or call this endpoint with your HTML as a `GET` parameter (e.g., `?html=...`).
+    - Useful for rendering HTML snippets or quick preview screenshots.
+    - **Note:** For best results, use valid HTML.
     """)
 
 with tab1:
@@ -51,9 +72,7 @@ with tab1:
                     with open(tmp_html, "w") as f:
                         f.write(html_input)
                     driver.get(f"file://{tmp_html}")
-                    # Wait for rendering
                     driver.implicitly_wait(2)
-                    # Full page screenshot
                     png_data = driver.get_screenshot_as_png()
                     driver.quit()
                 st.success("Image generated successfully!")
